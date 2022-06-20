@@ -1,0 +1,135 @@
+MODEL:
+  META_ARCHITECTURE: "UnifiedTransformerTracker2"
+  WEIGHTS: "https://download.pytorch.org/models/resnet50-19c8e357.pth"
+  BACKBONE:
+    NAME: "resnet50"
+    OUTPUT_LAYERS: ["layer2", "layer3", "layer4"]
+    FROZEN_STAGES: -1
+    NORM: SyncBN
+  FEATURE_DIM: 512
+  NUM_QUERIES: 500
+  POSITION_EMBEDDING: "sine"
+  NUM_CLASS: 20
+  SOT:
+    FEATURE_DIM: 512
+    POOL_SIZE: 7
+    POOL_SCALES: [0.0625]
+    POOL_SAMPLE_RATIO: 2
+    POOL_TYPE: "ROIAlignV2"
+    BOX_HEAD:
+      NAME: "Corner2"
+      INPUT_DIM: 512
+      HIDDEN_DIM: 512
+  MOT:
+    POOL_SIZE: 7
+    POOL_SCALES: [0.125, 0.0625, 0.03125, 0.015625]
+    POOL_SAMPLE_RATIO: 2
+    POOL_TYPE: "ROIAlignV2"
+  BOX_HEAD:
+    HIDDEN_DIM: 512
+    INPUT_DIM: 512
+  TRACK_HEAD:
+    OUTPUT_SCORE: False
+    ITERATIONS: 6
+    FEATURE_DIM: 512
+    DYNAMIC_DIM: 64
+    NUM_DYNAMIC: 2
+    DIM_FEEDFORWARD: 1024
+    DROPOUT: 0.1
+    EXPAND_SCALE: 1.0
+
+
+SOT:
+  OBJECTIVE:
+    NAME: "SequenceSOTObjective"
+  DATASET:
+    ROOT: "./data"
+    CLASS_NAME: "SequenceDataset"
+    PROCESSING_NAME: "SequenceProcessing"
+    BOX_MODE: 'xyxy'
+    MAX_SAMPLE_INTERVAL: 400
+    SAMPLE_MODE: "interval"
+    TRAIN:
+      DATASET_NAMES: ["COCO17", "lasot", "trackingnet", "got10k_train"]
+      DATASETS_RATIO: [1, 1, 1, 1]
+    SEARCH:
+      SIZE: 352
+      FACTOR: 6.0
+      CENTER_JITTER: 5.5
+      SCALE_JITTER: 0.5
+      FRAMES: 3
+    TEST:
+      DATASET_NAMES: ["lasot"]
+      SPLITS: [""]
+      VERSIONS: [""]
+
+  DATALOADER:
+    NUM_WORKERS: 0
+    STACK_DIM: 0
+    COLLATE_FN: 'trival'
+    BATCH_SIZE: 4
+
+MOT:
+  OBJECTIVE:
+    NAME: "MOTObjective3"
+    # NAME: "MOTObjective"
+    NUM_CLASS: 20
+  DATASET:
+    ROOT: "./data"
+    CLASS_NAME: "MOTDataset"
+    PROCESSING_NAME: "MOTProcessing"
+    MAX_SAMPLE_INTERVAL: 200
+    SAMPLE_MODE: "interval"
+    TRAIN:
+      DATASET_NAMES: ["mot_trainhalf"]
+      DATASETS_RATIO: [1]
+      MIN_SIZE: [300]
+      MODE: 'pair'
+    TEST:
+      DATASET_NAMES: ["mot_pub"]
+      SPLITS: ["val_half"]
+      VERSIONS: ["16"]
+
+  DATALOADER:
+    NUM_WORKERS: 8
+    STACK_DIM: 0
+    COLLATE_FN: 'trival'
+    BATCH_SIZE: 64
+
+
+SOLVER:
+  MAX_ITER: 400000
+  BASE_LR: 1e-4
+  OPTIMIZER_NAME: "adamw"
+  LR_SCHEDULER:
+    NAME: "cosine"
+    WARMUP_ITERS: 2000
+    WARMUP_LR: 1e-6
+    LR_MIN: 1e-6
+  CHECKPOINT_PERIOD: 10000
+  CLIP_GRADIENTS:
+    ENABLED: False
+    CLIP_TYPE: "norm"
+    CLIP_VALUE: 0.1
+
+
+OUTPUT_DIR: "./outputs"
+CUDNN_BENCHMARK: False
+SYNC_BN: True
+
+SEED: 0
+
+TEST:
+  EVAL_PERIOD: 0
+  ETEST_PERIOD: 80000
+
+TRACKER:
+  NAME: "SiameseTracker"
+  MEMORY_SIZE: 2
+  PUBLIC_DETECTION: False
+  DETECTION_THRESH: 0.4
+  TRACKING_THRESH: 1.0
+  MATCHING_THRESH: 1.2
+
+  
+      

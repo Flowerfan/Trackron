@@ -1,0 +1,80 @@
+MODEL:
+  META_ARCHITECTURE: "SiameseMOT"
+  # WEIGHTS: "https://download.pytorch.org/models/resnet50-19c8e357.pth"
+  WEIGHTS: "checkpoints/transtrack/transtrack50.pth"
+  BACKBONE:
+    NAME: resnet50
+    OUTPUT_LAYERS: ["layer2", "layer3", "layer4"]
+    FROZEN_STAGES: 1
+    NORM: FrozenBN
+  
+
+  MOT:
+    NAME: "TransTrack"
+    FEATURE_LAYERS: ["layer2", "layer3", "layer4"]
+    FEATURE_DIM: 256
+    POSITION_EMBEDDING: "sine"
+    NUM_CLASS: 20
+
+MOT: 
+  OBJECTIVE:
+    NAME: "MOTObjective"
+    NUM_CLASS: 20
+
+
+  DATASET:
+    ROOT: "./data"
+    CLASS_NAME: "UnityTrackingDataset"
+    PROCESSING_NAME: "UnityTrackingProcessing"
+    BOX_MODE: 'xyxy'
+    MAX_SAMPLE_INTERVAL: 1
+    SAMPLE_MODE: "interval"
+    TRAIN:
+      DATASET_NAMES: ["MOT"]
+      DATASETS_RATIO: [1]
+      MIN_SIZE: [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
+      MODE: 'pair'
+    TEMPLATE:
+      FRAMES: 1
+    SEARCH:
+      FRAMES: 1
+    TEST:
+      DATASET_NAMES: ["mot"]
+      SPLITS: ["val_half"]
+      VERSIONS: ["17"]
+
+
+SOLVER:
+  MAX_ITER: 100000
+  BASE_LR: 0.0002
+  BASE_LR_BACKBONE: 0.1
+  OPTIMIZER_NAME: "adamw"
+  LR_SCHEDULER:
+    NAME: "cosine"
+    DECAY_STEP: 30000
+    WARMUP_ITERS: 0
+    WARMUP_LR: 0.000001
+    LR_MIN: 0.00001
+  CHECKPOINT_PERIOD: 5000
+  CLIP_GRADIENTS:
+    ENABLED: True
+    CLIP_TYPE: "norm"
+    CLIP_VALUE: 0.1
+
+
+
+OUTPUT_DIR: "outputs/transtrack"
+CUDNN_BENCHMARK: False
+
+TEST:
+  EVAL_PERIOD: 0
+  ETEST_PERIOD: 5000
+
+TRACKER:
+  # NAME: "MOTTracker"
+  NAME: "SiameseTracker"
+
+SEED: 1
+
+  
+      

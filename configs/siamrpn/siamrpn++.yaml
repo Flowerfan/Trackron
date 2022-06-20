@@ -1,0 +1,90 @@
+MODEL:
+  META_ARCHITECTURE: "SiameseSOT"
+  # WEIGHTS: "https://download.pytorch.org/models/resnet50-19c8e357.pth"
+  WEIGHTS: "checkpoints/siamrpn/siamrpn50.pth"
+  PIXEL_MEAN: [0, 0, 0]
+  PIXEL_STD: [1.0, 1.0, 1.0]
+  BACKBONE:
+    NAME: "resnet50_rpn"
+    FROZEN_STAGES: 1
+    NORM: "BN"
+  HIDDEN_DIM: 256
+
+  SOT:
+    NAME: SiamRPN
+    FEATURE_LAYER: ['layer2', 'layer3', 'layer4']
+    NECK:
+      ENABLE: True
+      NAME: AdjustAllLayer
+      IN_CHANNELS: [512, 1024, 2048]
+      OUT_CHANNELS: [256, 256, 256]
+    RPN_HEAD:
+      NAME: "MultiRPN"
+      ANCHOR_NUM: 5
+      IN_CHANNELS: [256, 256, 256]
+      WEIGHTED: False
+
+SOT:
+  OBJECTIVE:
+    NAME: "SiamRPNObjective"
+
+  DATASET:
+    ROOT: "./data"
+    CLASS_NAME: "TrackingDataset"
+    PROCESSING_NAME: "SiamRPNProcessing"
+    BOX_MODE: 'xyxy'
+    SAMPLE_MODE: "interval"
+    TRAIN:
+      # DATASET_NAMES: ["COCO17"]
+      # DATASETS_RATIO: [1]
+      DATASET_NAMES: ["GOT10K_train_full", "COCO17", "LASOT", "TRACKINGNET"]
+      DATASETS_RATIO: [1, 1, 1, 1]
+    TEST:
+      DATASET_NAMES: ["otb"]
+      VERSIONS: [""]
+      SPLITS: [""]
+    TEMPLATE:
+      SIZE: 127
+      FRAMES: 1
+      FACTOR: 2.0
+      CENTER_JITTER: 0.
+      SCALE_JITTER: 0.
+    SEARCH:
+      SIZE: 255
+      FRAMES: 1
+      FACTOR: 5.0
+      CENTER_JITTER: 4.5
+      SCALE_JITTER: 0.5
+      OUT_SIZE: 25
+    ANCHOR:
+      STRIDE: 8
+      RATIOS: [0.33, 0.5, 1, 2, 3]
+      SCALES: [8]
+      ANCHOR_NUM: 5
+
+  DATALOADER:
+    NUM_WORKERS: 0
+    STACK_DIM: 0
+    BATCH_SIZE: 36
+
+SOLVER:
+  MAX_ITER: 100000
+  BASE_LR: 0.0001
+  OPTIMIZER_NAME: "adamw"
+  LR_SCHEDULER:
+    NAME: "cosine"
+    DECAY_STEP: 70000
+    WARMUP_ITERS: 0
+    WARMUP_LR: 0.000001
+    LR_MIN: 0.000001
+  CHECKPOINT_PERIOD: 10000
+
+OUTPUT_DIR: "outputs/siamrpn"
+CUDNN_BENCHMARK: True
+
+TEST:
+  ETEST_PERIOD: 10000
+
+TRACKER:
+  NAME: "SiamRPNTracker"
+  PARAMETER: "siamrpn"
