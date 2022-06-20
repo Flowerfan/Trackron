@@ -14,8 +14,9 @@ See [INSTALL.md](INSTALL.md)
 ## SOT 
 We have implemented several SOT methods (DiMP, SiamRPN, Stark) in this repo and support popular benchmark datasets (OTB, LaSOT, GOT10k, TrackingNet) for evaluation.
 For more information, see [SOT_README.md](SOT_README.md)
+
 ## MOT
-We have implemented TransTrack, FairMOT, and ByteTrack for MOT evaluation. For more information, see [MOT_README.md](MOT_README.me)
+We have implemented TransTrack, FairMOT, and ByteTrack for MOT evaluation. For more information, see [MOT_README.md](MOT_README.md)
 
 
 ## Models
