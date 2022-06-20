@@ -1,0 +1,94 @@
+MODEL:
+  META_ARCHITECTURE: "SiameseSOT"
+  WEIGHTS: ./checkpoints/stark/stark50.pth
+  BACKBONE:
+    NAME: "resnet50"
+    FROZEN_STAGES: 1
+    NORM: "FrozenBN"
+  HIDDEN_DIM: 256
+
+  SOT:
+    POSITION_EMBEDDING: "sine"
+    FEATURE_LAYER: "layer3"
+    FEATURE_DIM: 256
+    NAME: STARK
+    ENCODER:
+      NUM_LAYERS: 6
+      HIDDEN_DIM: 256
+      HEADS: 8
+      DIM_FEEDFORWARD: 2048
+      DROPOUT: 0.1
+      NORM: "relu"
+      PRE_NORM: False
+    DECODER:
+      NUM_LAYERS: 6
+      HIDDEN_DIM: 256
+      HEADS: 8
+      DIM_FEEDFORWARD: 2048
+      DROPOUT: 0.1
+      NORM: "relu"
+      PRE_NORM: False
+
+    BOX_HEAD:
+      NAME: "Corner"
+      INPUT_DIM: 256
+      HIDDEN_DIM: 256
+
+SOT:
+  OBJECTIVE:
+    NAME: "SOTObjective"
+    STACK: False
+
+  DATASET:
+    ROOT: "./data"
+    CLASS_NAME: "StarkDataset"
+    PROCESSING_NAME: "StarkProcessing"
+    BOX_MODE: 'xyxy'
+    SAMPLE_MODE: "interval"
+    TRAIN:
+      MODE: "pair"
+      DATASET_NAMES: ["GOT10K_train_full", "COCO17", "LASOT", "TRACKINGNET"]
+      DATASETS_RATIO: [1, 1, 1, 1]
+    TEMPLATE:
+      SIZE: 128
+      FRAMES: 1
+      FACTOR: 2.0
+      CENTER_JITTER: 0.
+      SCALE_JITTER: 0.
+    SEARCH:
+      SIZE: 320
+      FRAMES: 1
+      FACTOR: 5.0
+      CENTER_JITTER: 4.5
+      SCALE_JITTER: 0.5
+    TEST:
+      DATASET_NAMES: ["otb"]
+      VERSIONS: [""]
+      SPLITS: [""]
+
+  DATALOADER:
+    NUM_WORKERS: 0
+    STACK_DIM: 0
+    BATCH_SIZE: 24
+
+SOLVER:
+  MAX_ITER: 100000
+  BASE_LR: 0.0001
+  OPTIMIZER_NAME: "adamw"
+  LR_SCHEDULER:
+    NAME: "cosine"
+    DECAY_STEP: 30000
+    WARMUP_ITERS: 0
+    WARMUP_LR: 0.000001
+    LR_MIN: 0.000001
+  CHECKPOINT_PERIOD: 5000
+
+OUTPUT_DIR: "outputs/stark"
+CUDNN_BENCHMARK: True
+
+TEST:
+  ETEST_PERIOD: 50000
+
+TRACKER:
+  NAME: "StarkTracker"
+  # PARAMS: "stark"

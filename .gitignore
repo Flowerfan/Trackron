@@ -1,0 +1,11 @@
+# python
+*.py[cod]
+*/__pycache__
+*/*/__pycache__
+*/*/*/__pycache__
+*/*/*/*/__pycache__
+__pycache__
+*.log
+*/*.so
+build/*
+trackron.egg*

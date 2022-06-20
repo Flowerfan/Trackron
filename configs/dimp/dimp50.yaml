@@ -1,0 +1,103 @@
+MODEL:
+  META_ARCHITECTURE: "DiMPNet"
+  WEIGHTS: "checkpoints/dimp/dimp50.pth"
+  BACKBONE:
+    NAME: "resnet50"
+    PRETRAIN: True
+    OUTPUT_LAYERS: ['layer2', 'layer3']
+  SOT: 
+    NAME: "DiMP"
+      
+    CLS_HEAD:
+      NAME: "DIMP_CLS_HEAD"
+      FILTER:
+        FILTER_SIZE: 4
+        FEATURE_STRIDE: 16
+      EXTRACTOR:
+        FILTER_SIZE: 4
+        FINAL_CONV: True
+        OUT_DIM: 512
+        FEATURE_NORM: True
+      OPTIMIZER:
+        NAME: "DiMPSteepestDescentGN"
+        ITER: 5
+        STEP: 0.9
+        GAUSS_SIGMA: 0.9
+        NUM_DIST_BINS: 100
+        BIN_DISPLACEMENT: 0.1
+        MASK_FACOTR: 3.0
+        INIT_FILTER_REG: 0.1
+        SCORE_ACT: "relu"
+        MASK_ACT: "sigmoid"
+    BOX_HEAD:
+      NAME: "AtomIoUNet"
+      INPUT_DIM: [512, 1024]
+      INTER_INPUT_DIM: [256, 256]
+      INTER_OUT_DIM: [256, 256]
+      INPUT_FEATURE_SCALE: [0.125, 0.0625]
+
+SOT:
+  OBJECTIVE:
+    NAME: "DiMPObjective"
+    LOSS_CLS: "LBHinge"
+    LOSS_CLS_THRESHOLD: 0.05
+    LOSS_BBOX: "IoUScore"
+    WEIGHT:
+      LOSS_CLS: 100.0
+      LOSS_BBOX: 1.0
+  DATASET:
+    ROOT: data
+    CLASS_NAME: "TrackingDataset"
+    PROCESSING_NAME: "DiMPProcessing"
+    LABLE_SIGMA: 0.042
+    TRAIN:
+      # DATASET_NAMES: ["coco17", "trackingnet", "got10k_vottrain", "lasot"]
+      # DATASETS_RATIO: [1, 1, 1, 1]
+      DATASET_NAMES: ["coco17"]
+      DATASETS_RATIO: [1]
+      PROPOSALS: 
+        MIN_IOU: 0.1
+        BOXES_PER_TARGET: 8
+        SIGMA_FACTOR: [0.01, 0.05, 0.1, 0.2, 0.3]
+    TEMPLATE:
+      SIZE: 288
+      CENTER_JITTER: 3.0
+      SCALE_JITTER: 0.25
+      FRAMES: 3
+    SEARCH:
+      SIZE: 288
+      CENTER_JITTER: 5.5
+      SCALE_JITTER: 0.5
+      FRAMES: 3
+    TEST:
+      DATASET_NAMES: ["otb"]
+      VERSIONS: [""]
+      SPLITS: [""]
+
+  DATALOADER:
+    NUM_WORKERS: 8
+    STACK_DIM: 1
+    BATCH_SIZE: 16
+
+
+
+SOLVER:
+  MAX_ITER: 100000
+  BASE_LR: 0.0001
+  LR_SCHEDULER:
+    DECAY_STEP: 30000
+    WARMUP_ITERS: 0
+    WARMUP_LR: 0.000001
+  CHECKPOINT_PERIOD: 10000
+
+
+TEST:
+  ETEST_PERIOD: 50000
+
+TRACKER:
+  NAME: "DiMPTracker"
+
+CUDNN_BENCHMARK: True
+OUTPUT_DIR: "outputs/dimp50_training"
+  
+      
