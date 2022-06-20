@@ -1,4 +1,4 @@
-We currently support four SOT methods for inference: [TransTrack](https://github.com/PeizeSun/TransTrack), [FairMOT](https://github.com/ifzhang/FairMOT), [ByteTrack](https://github.com/ifzhang/ByteTrack), and our [UTT](https://arxiv.org/abs/2203.15175). More methods could be easily reproduced with our codebase.
+We currently support fou MOT methods: [TransTrack](https://github.com/PeizeSun/TransTrack), [FairMOT](https://github.com/ifzhang/FairMOT), [ByteTrack](https://github.com/ifzhang/ByteTrack), and our [UTT](https://arxiv.org/abs/2203.15175). More methods could be easily reproduced with our codebase.
 
 Data and Checkpoint structures
 ```
